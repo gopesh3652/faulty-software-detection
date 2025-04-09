@@ -5,3 +5,4 @@ pandas
 numpy
 imbalanced-learn
 matplotlib
+gunicorn
