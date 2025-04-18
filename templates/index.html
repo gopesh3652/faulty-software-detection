@@ -1,88 +1,273 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Risk Prediction</title>
+		<title>Fault Prediction System</title>
 		<style>
 			body {
 				font-family: "Segoe UI", sans-serif;
-				background: linear-gradient(to right, #a1c4fd, #c2e9fb);
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				min-height: 100vh;
+				background-color: #121212; /* Dark background color */
+				color: #e0e0e0;
 				margin: 0;
+				padding: 0;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
 			}
+
 			.container {
-				background: #fff;
+				background-color: #1e1e1e; /* Dark container */
 				padding: 2rem 3rem;
-				border-radius: 12px;
-				box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+				border-radius: 15px;
+				box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
 				width: 100%;
-				max-width: 600px;
+				max-width: 1100px;
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				align-items: flex-start;
+				gap: 2rem;
 			}
+
 			h1 {
+				color: #03a9f4; /* Light blue color */
+				font-size: 2rem;
+				margin-bottom: 1.5rem;
 				text-align: center;
-				color: #333;
-			}
-			label {
-				margin-top: 1rem;
-				display: block;
-				font-weight: 600;
-			}
-			input[type="text"] {
 				width: 100%;
-				padding: 8px;
-				margin-top: 4px;
-				border-radius: 6px;
-				border: 1px solid #ccc;
+				flex-basis: 100%;
 			}
-			button {
-				margin-top: 2rem;
-				padding: 10px 20px;
-				background-color: #3498db;
-				border: none;
-				color: white;
+
+			label {
+				font-size: 1rem;
+				font-weight: bold;
+				color: #f5f5f5; /* Light color for labels */
+				text-align: left;
+				display: block;
+				margin-bottom: 0.5rem;
+			}
+
+			select,
+			textarea {
+				width: 100%;
+				padding: 12px;
+				margin-top: 0.5rem;
+				background-color: #333; /* Dark background for inputs */
+				color: #fff; /* White text for inputs */
+				border: 1px solid #555; /* Subtle border */
 				border-radius: 8px;
-				font-size: 16px;
+				font-size: 1rem;
+				resize: none;
+			}
+
+			textarea {
+				min-height: 200px;
+			}
+
+			button {
+				padding: 12px 20px;
+				background-color: #03a9f4; /* Light blue button */
+				color: white;
+				border: none;
+				border-radius: 8px;
+				font-size: 1.1rem;
 				cursor: pointer;
 				width: 100%;
-			}
-			button:hover {
-				background-color: #2980b9;
-			}
-			.result {
 				margin-top: 1.5rem;
-				padding: 1rem;
+				transition: background-color 0.3s;
+			}
+
+			button:hover {
+				background-color: #0288d1; /* Darker blue on hover */
+			}
+
+			.counts {
+				margin-top: 2rem;
+				background-color: #2e2e2e; /* Dark background for counts */
+				padding: 1.5rem;
+				border-radius: 10px;
+				text-align: left;
+				font-size: 1.1rem;
+				width: 45%; /* Adjust width for side-by-side layout */
+				min-width: 250px; /* Prevent shrinking */
+				flex-grow: 1; /* Allow it to grow if space permits */
+			}
+
+			.prediction {
+				margin-top: 1.5rem;
+				padding: 1.5rem;
+				border-radius: 10px;
 				text-align: center;
 				font-size: 1.2rem;
-				border-radius: 8px;
 				font-weight: bold;
+				width: 45%; /* Adjust width for side-by-side layout */
+				min-width: 250px; /* Prevent shrinking */
 			}
-			.high-risk {
-				background-color: #fdecea;
-				color: #c0392b;
+
+			.prediction-high {
+				background-color: #e53935; /* Red for high risk */
+				color: white;
 			}
-			.low-risk {
-				background-color: #e8f5e9;
-				color: #2e7d32;
+
+			.prediction-low {
+				background-color: #43a047; /* Green for low risk */
+				color: white;
+			}
+
+			/* Responsiveness */
+			@media (max-width: 768px) {
+				.container {
+					flex-direction: column;
+					align-items: center;
+				}
+				.counts,
+				.prediction {
+					width: 100%; /* Full width on smaller screens */
+					min-width: 100%; /* Prevent shrinking */
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<h1>Risk Prediction</h1>
-			<form method="POST">
-				{% for col in columns %}
-				<label for="{{ col }}">{{ col.replace('_', ' ').title() }}</label>
-				<input type="text" name="{{ col }}" required />
-				{% endfor %}
-				<button type="submit">Predict</button>
-			</form>
-			{% if prediction %}
-			<div class="result">Prediction: <strong>{{ prediction }}</strong></div>
-			{% endif %}
+			<div class="input-section">
+				<h1>Fault Prediction System</h1>
+
+				<label for="language">Select Programming Language:</label>
+				<select id="language">
+					<option value="Python">Python</option>
+					<option value="C">C</option>
+					<option value="C++">C++</option>
+					<option value="Java">Java</option>
+				</select>
+
+				<label for="code">Enter your code:</label>
+				<textarea
+					id="code"
+					placeholder="Write your code here..."
+				></textarea>
+
+				<button onclick="analyze()">Analyze</button>
+				<button onclick="predict()">Predict</button>
+			</div>
+
+			<div class="output-section">
+				<div class="counts" id="counts">
+					<h3>Attribute Counts</h3>
+					<p><strong>input:</strong> 0</p>
+					<p><strong>output:</strong> 0</p>
+					<p><strong>for:</strong> 0</p>
+					<p><strong>if:</strong> 0</p>
+					<p><strong>while:</strong> 0</p>
+					<p><strong>Exp:</strong> 0</p>
+					<p><strong>fc:</strong> 0</p>
+				</div>
+
+				<div class="prediction" id="prediction">Prediction: None</div>
+			</div>
 		</div>
+
+		<script>
+			const patterns = {
+				Python: {
+					input: /\binput\s*\(/g,
+					output: /\bprint\s*\(/g,
+					for: /\bfor\b/g,
+					if: /\bif\b/g,
+					while: /\bwhile\b/g,
+					Exp: /\w+\s*[\+\-\*\/%]\s*\w+/g,
+					fc: /\bdef\s+\w+\s*\(|\w+\s*\(.*\)/g,
+				},
+				C: {
+					input: /\bscanf\s*\(/g,
+					output: /\bprintf\s*\(/g,
+					for: /\bfor\b/g,
+					if: /\bif\b/g,
+					while: /\bwhile\b/g,
+					Exp: /\w+\s*[\+\-\*\/%]\s*\w+/g,
+					fc: /\b\w+\s+\w+\s*\(.*\)/g,
+				},
+				"C++": {
+					input: /\bcin\s*>>/g,
+					output: /\bcout\s*<</g,
+					for: /\bfor\b/g,
+					if: /\bif\b/g,
+					while: /\bwhile\b/g,
+					Exp: /\w+\s*[\+\-\*\/%]\s*\w+/g,
+					fc: /\b\w+\s+\w+\s*\(.*\)/g,
+				},
+				Java: {
+					input: /\bScanner\s+\w+\s*=\s*new\s+Scanner/g,
+					output: /\bSystem\.out\.print(ln)?\s*\(/g,
+					for: /\bfor\b/g,
+					if: /\bif\b/g,
+					while: /\bwhile\b/g,
+					Exp: /\w+\s*[\+\-\*\/%]\s*\w+/g,
+					fc: /\b\w+\s+\w+\s*\(.*\)/g,
+				},
+			};
+
+			function analyze() {
+				const lang = document.getElementById("language").value;
+				const code = document.getElementById("code").value;
+				const regexSet = patterns[lang];
+
+				const counts = {};
+				for (let key in regexSet) {
+					const matches = code.match(regexSet[key]);
+					counts[key] = matches ? matches.length : 0;
+				}
+
+				window.currentCounts = { ...counts };
+
+				let html = "";
+				for (let key of [
+					"input",
+					"output",
+					"for",
+					"if",
+					"while",
+					"Exp",
+					"fc",
+				]) {
+					html += `<p><strong>${key}:</strong> ${
+						counts[key] || 0
+					}</p>`;
+				}
+				document.getElementById("counts").innerHTML = html;
+			}
+
+			async function predict() {
+				try {
+					const response = await fetch("/predict", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(window.currentCounts),
+					});
+					const data = await response.json();
+
+					const predictionDiv = document.getElementById("prediction");
+					if (data.prediction === 0) {
+						predictionDiv.className = "prediction prediction-high";
+						predictionDiv.innerHTML =
+							"<strong>Prediction:</strong> High Risk";
+					} else if (data.prediction === 1) {
+						predictionDiv.className = "prediction prediction-low";
+						predictionDiv.innerHTML =
+							"<strong>Prediction:</strong> Low Risk";
+					} else {
+						predictionDiv.className = "prediction";
+						predictionDiv.innerHTML =
+							"<strong>Prediction:</strong> Unknown";
+					}
+				} catch (err) {
+					document.getElementById(
+						"prediction",
+					).innerHTML = `<strong>Error:</strong> ${err.message}`;
+				}
+			}
+		</script>
 	</body>
 </html>

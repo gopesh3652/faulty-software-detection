@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import pickle
 import pandas as pd
-import numpy as np
 
 app = Flask(__name__)
 
@@ -18,20 +17,34 @@ with open("threshold.txt", "r") as f:
 with open("columns.pkl", "rb") as f:
     columns = pickle.load(f)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def index():
-    prediction = None
-    if request.method == "POST":
-        try:
-            input_data = [float(request.form[col]) for col in columns]
-            input_df = pd.DataFrame([input_data], columns=columns)
-            input_scaled = scaler.transform(input_df)
-            prob = model.predict_proba(input_scaled)[0][1]
-            result = 1 if prob >= threshold else 0
-            prediction = str(result)
-        except Exception as e:
-            prediction = f"Error: {str(e)}"
-    return render_template("index.html", columns=columns, prediction=prediction)
+    return render_template("index.html", columns=columns)
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        data = request.json
+        # Ensure the data contains the attribute counts
+        input_count = data.get("input", 0)
+        output_count = data.get("output", 0)
+        for_count = data.get("for", 0)
+        if_count = data.get("if", 0)
+        while_count = data.get("while", 0)
+        exp_count = data.get("Exp", 0)
+        fc_count = data.get("fc", 0)
+
+        # Example prediction logic (this should be replaced with your actual logic or model)
+        # Here, just a simple rule for demo purposes:
+        if input_count > 0 and output_count > 0:
+            prediction = 1  # Low risk
+        else:
+            prediction = 0  # High risk
+
+        return jsonify({"prediction": prediction})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)
